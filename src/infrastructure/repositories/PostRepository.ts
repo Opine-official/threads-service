@@ -36,4 +36,9 @@ export class PostRepository implements IPostRepository {
       return new Error('Something went wrong while deleting');
     }
   }
+
+  public async findMongoIdByPostId(postId: string): Promise<string | null> {
+    const userDocument = await PostModel.findOne({ postId });
+    return userDocument ? userDocument._id.toString() : null;
+  }
 }

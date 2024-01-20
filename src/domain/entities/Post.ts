@@ -1,7 +1,5 @@
-import { randomUUID } from 'crypto';
-
 type PostParams = {
-  postId?: string;
+  postId: string;
   title: string;
   description: string;
   user: string;
@@ -18,7 +16,7 @@ export class Post {
   slug: string;
 
   constructor(params: PostParams) {
-    this.postId = params.postId || randomUUID();
+    this.postId = params.postId;
     this.title = params.title;
     this.description = params.description;
     this.user = params.user;

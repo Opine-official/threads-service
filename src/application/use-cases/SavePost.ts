@@ -16,7 +16,7 @@ interface ISavePostResult {
   postId: string;
 }
 
-class SavePost implements IUseCase<ISavePostDTO, ISavePostResult> {
+export class SavePost implements IUseCase<ISavePostDTO, ISavePostResult> {
   constructor(
     private readonly _postRepo: IPostRepository,
     private readonly _userRepo: IUserRepository,
@@ -38,8 +38,8 @@ class SavePost implements IUseCase<ISavePostDTO, ISavePostResult> {
       slug: input.slug,
     };
 
-    const post = new Post(input);
-    const savePostResult = await this._postRepo.save(postData);
+    const post = new Post(postData);
+    const savePostResult = await this._postRepo.save(post);
 
     if (savePostResult instanceof Error) {
       return savePostResult;
@@ -50,5 +50,3 @@ class SavePost implements IUseCase<ISavePostDTO, ISavePostResult> {
     };
   }
 }
-
-export default SavePost;

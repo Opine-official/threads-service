@@ -14,7 +14,7 @@ interface ISaveUserResult {
   userId: string;
 }
 
-class SaveUser implements IUseCase<ISaveUserDTO, ISaveUserResult> {
+export class SaveUser implements IUseCase<ISaveUserDTO, ISaveUserResult> {
   constructor(private readonly _userRepo: IUserRepository) {}
 
   async execute(input: ISaveUserDTO): Promise<ISaveUserResult | Error> {
@@ -36,5 +36,3 @@ class SaveUser implements IUseCase<ISaveUserDTO, ISaveUserResult> {
     };
   }
 }
-
-export default SaveUser;
