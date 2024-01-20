@@ -12,6 +12,7 @@ interface ISaveCommentRequestDTO {
 
 interface ISaveCommentDTO {
   commentId: string;
+  postId: string;
   content: string;
   user: string;
   post: string;

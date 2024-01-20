@@ -1,8 +1,10 @@
 import { DeletePost } from '../../application/use-cases/DeletePost';
 import { SavePost } from '../../application/use-cases/SavePost';
+import { SaveThread } from '../../application/use-cases/SaveThread';
 import { SaveUser } from '../../application/use-cases/SaveUser';
 import kafka from '../../infrastructure/brokers/kafka/config';
 import { PostRepository } from '../../infrastructure/repositories/PostRepository';
+import { ThreadRepository } from '../../infrastructure/repositories/ThreadRepository';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 
 const consumer = kafka.consumer({ groupId: 'threads-consumer-group' });
@@ -14,9 +16,17 @@ const run = async () => {
   await consumer.subscribe({ topic: 'post-delete-topic' });
   const userRepository = new UserRepository();
   const postRepository = new PostRepository();
+  const threadRepository = new ThreadRepository();
+
   const saveUser = new SaveUser(userRepository);
   const savePost = new SavePost(postRepository, userRepository);
   const deletePost = new DeletePost(postRepository);
+
+  const saveThread = new SaveThread(
+    userRepository,
+    postRepository,
+    threadRepository,
+  );
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
@@ -47,6 +57,17 @@ const run = async () => {
 
         if (savePostResult instanceof Error) {
           console.error(savePostResult);
+          return;
+        }
+
+        const saveThreadResult = await saveThread.execute({
+          userId: postData.user,
+          postId: postData.postId,
+          commentCount: 0,
+        });
+
+        if (saveThreadResult instanceof Error) {
+          console.error(saveThreadResult);
           return;
         }
       } else if (topic === 'post-delete-topic') {

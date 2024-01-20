@@ -6,8 +6,13 @@ export class DeleteCommentController implements IController {
   public constructor(private readonly _useCase: DeleteComment) {}
 
   public async handle(req: Request, res: Response): Promise<void> {
+    if (!req.query.commentId || typeof req.query.commentId !== 'string') {
+      res.status(400).json({ error: 'Invalid commentId' });
+      return;
+    }
+
     const result = await this._useCase.execute({
-      commentId: req.body.commentId,
+      commentId: req.query.commentId,
     });
 
     if (result instanceof Error) {

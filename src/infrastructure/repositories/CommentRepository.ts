@@ -1,6 +1,7 @@
 import { ICommentRepository } from '../../domain/interfaces/ICommentRepository';
 import { Comment } from '../../domain/entities/Comment';
 import CommentModel from '../models/CommentModel';
+import { IComment } from '../../shared/interfaces/IComment';
 
 export class CommentRepository implements ICommentRepository {
   public async findById(commentId: string): Promise<Comment | Error> {
@@ -35,6 +36,7 @@ export class CommentRepository implements ICommentRepository {
       const commentDocument = new CommentModel({
         commentId: comment.commentId,
         postId: comment.postId,
+        post: comment.post,
         user: comment.user,
         content: comment.content,
       });
@@ -77,6 +79,38 @@ export class CommentRepository implements ICommentRepository {
       }
 
       return new Error('Something went wrong while deleting');
+    }
+  }
+
+  public async getCommentsByPostId(
+    postId: string,
+  ): Promise<IComment[] | Error> {
+    try {
+      const comments = await CommentModel.find({
+        postId: postId,
+      })
+        .sort({ createdAt: -1 })
+        .populate('user');
+
+      return comments.map((comment) => ({
+        commentId: comment.commentId,
+        postId: comment.postId,
+        content: comment.content,
+        user: comment.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the comments');
     }
   }
 }

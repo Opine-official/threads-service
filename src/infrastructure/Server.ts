@@ -6,12 +6,14 @@ import { SaveCommentController } from '../presentation/controllers/SaveCommentCo
 import { authenticateToken } from '@opine-official/authentication';
 import { UpdateCommentController } from '../presentation/controllers/UpdateCommentController';
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
+import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
   saveCommentController: SaveCommentController;
   updateCommentController: UpdateCommentController;
   deleteCommentController: DeleteCommentController;
+  getCommentsByPostController: GetCommentsByPostController;
 }
 
 const corsOptions = {
@@ -51,6 +53,10 @@ export class Server {
       .delete('/', authenticateToken, (req, res) => {
         controllers.deleteCommentController.handle(req, res);
       });
+
+    app.get('/comments', (req, res) => {
+      controllers.getCommentsByPostController.handle(req, res);
+    });
 
     app.listen(port, () => {
       console.log(`Server is running in ${port}`);
