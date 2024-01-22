@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -24,5 +24,7 @@ const UserSchema = new mongoose.Schema({
     unique: true,
   },
 });
+
+export type UserModel = InferSchemaType<typeof UserSchema>;
 
 export const UserModel = mongoose.model('User', UserSchema);

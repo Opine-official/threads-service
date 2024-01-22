@@ -1,6 +1,7 @@
 import { Comment } from '../../domain/entities/Comment';
 import { ICommentRepository } from '../../domain/interfaces/ICommentRepository';
 import { IPostRepository } from '../../domain/interfaces/IPostRepository';
+import { IThreadRepository } from '../../domain/interfaces/IThreadRepository';
 import { IUserRepository } from '../../domain/interfaces/IUserRepository';
 import { IUseCase } from '../../shared/interfaces/IUseCase';
 
@@ -29,6 +30,7 @@ export class SaveComment
     private readonly _commentRepo: ICommentRepository,
     private readonly _postRepo: IPostRepository,
     private readonly _userRepo: IUserRepository,
+    private readonly _threadRepo: IThreadRepository,
   ) {}
 
   async execute(
@@ -58,6 +60,29 @@ export class SaveComment
 
     if (saveCommentResult instanceof Error) {
       return saveCommentResult;
+    }
+
+    const threadId = await this._threadRepo.findThreadIdByPostId(input.postId);
+
+    if (threadId instanceof Error) {
+      return threadId;
+    }
+
+    const commentMongoId = await this._commentRepo.findMongoIdByCommentId(
+      comment.commentId,
+    );
+
+    if (commentMongoId instanceof Error) {
+      return commentMongoId;
+    }
+
+    const commentUpdateResult = await this._threadRepo.updateComment(
+      threadId,
+      commentMongoId,
+    );
+
+    if (commentUpdateResult instanceof Error) {
+      return commentUpdateResult;
     }
 
     return {

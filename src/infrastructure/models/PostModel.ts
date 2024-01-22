@@ -19,7 +19,7 @@ function arrayLimit(val: string[]): boolean {
   return val.length <= 5;
 }
 
-type PostModel = InferSchemaType<typeof PostSchema>;
+export type PostModel = InferSchemaType<typeof PostSchema>;
 
 const PostModel = mongoose.model('Post', PostSchema);
 

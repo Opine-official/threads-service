@@ -31,6 +31,29 @@ export class CommentRepository implements ICommentRepository {
     }
   }
 
+  public async findMongoIdByCommentId(
+    commentId: string,
+  ): Promise<string | Error> {
+    try {
+      const commentDocument = await CommentModel.findOne({
+        commentId: commentId,
+      });
+
+      if (!commentDocument) {
+        return new Error('Comment not found');
+      }
+
+      return commentDocument._id.toString();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error(
+        'Something went wrong while retrieving the mongoId of the comment',
+      );
+    }
+  }
+
   public async save(comment: Comment): Promise<void | Error> {
     try {
       const commentDocument = new CommentModel({

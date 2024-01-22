@@ -7,6 +7,7 @@ import { authenticateToken } from '@opine-official/authentication';
 import { UpdateCommentController } from '../presentation/controllers/UpdateCommentController';
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
+import { GetThreadsController } from '../presentation/controllers/GetThreadsController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -14,6 +15,7 @@ interface ServerControllers {
   updateCommentController: UpdateCommentController;
   deleteCommentController: DeleteCommentController;
   getCommentsByPostController: GetCommentsByPostController;
+  getThreadsController: GetThreadsController;
 }
 
 const corsOptions = {
@@ -40,17 +42,22 @@ export class Server {
       controllers.verifyUserController.handle(req, res);
     });
 
+    app.get('/', (req, res) => {
+      controllers.getThreadsController.handle(req, res);
+    });
+
     app
-      .get('/', (req, res) => {
-        res.send('Threads service is running');
+      .get('/comment', (req, res) => {
+        console.log(req, res);
+        // logic to fetch single comment goes here
       })
-      .post('/', authenticateToken, (req, res) => {
+      .post('/comment', authenticateToken, (req, res) => {
         controllers.saveCommentController.handle(req, res);
       })
-      .put('/', authenticateToken, (req, res) => {
+      .put('/comment', authenticateToken, (req, res) => {
         controllers.updateCommentController.handle(req, res);
       })
-      .delete('/', authenticateToken, (req, res) => {
+      .delete('/comment', authenticateToken, (req, res) => {
         controllers.deleteCommentController.handle(req, res);
       });
 

@@ -1,16 +1,19 @@
 import { DeleteComment } from './src/application/use-cases/DeleteComment';
 import { GetCommentsByPost } from './src/application/use-cases/GetCommentsByPost';
+import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
 import UpdateComment from './src/application/use-cases/UpdateComment';
 import { VerifyUser } from './src/application/use-cases/VerifyUser';
 import { DatabaseConnection } from './src/infrastructure/database/Connection';
 import { CommentRepository } from './src/infrastructure/repositories/CommentRepository';
 import { PostRepository } from './src/infrastructure/repositories/PostRepository';
+import { ThreadRepository } from './src/infrastructure/repositories/ThreadRepository';
 import { UserRepository } from './src/infrastructure/repositories/UserRepository';
 import { Server } from './src/infrastructure/Server';
 import run from './src/presentation/consumers/ThreadsConsumer';
 import { DeleteCommentController } from './src/presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from './src/presentation/controllers/GetCommentsByPostController';
+import { GetThreadsController } from './src/presentation/controllers/GetThreadsController';
 import { SaveCommentController } from './src/presentation/controllers/SaveCommentController';
 import { UpdateCommentController } from './src/presentation/controllers/UpdateCommentController';
 import { VerifyUserController } from './src/presentation/controllers/VerifyUserController';
@@ -21,12 +24,19 @@ export async function main(): Promise<void> {
   const userRepo = new UserRepository();
   const postRepo = new PostRepository();
   const commentRepo = new CommentRepository();
+  const threadRepo = new ThreadRepository();
 
   const verifyUser = new VerifyUser();
-  const saveComment = new SaveComment(commentRepo, postRepo, userRepo);
+  const saveComment = new SaveComment(
+    commentRepo,
+    postRepo,
+    userRepo,
+    threadRepo,
+  );
   const updateComment = new UpdateComment(commentRepo);
   const deleteComment = new DeleteComment(commentRepo);
   const getCommentsByPost = new GetCommentsByPost(commentRepo);
+  const getThreads = new GetThreads(threadRepo);
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -35,6 +45,7 @@ export async function main(): Promise<void> {
   const getCommentsByPostController = new GetCommentsByPostController(
     getCommentsByPost,
   );
+  const getThreadsController = new GetThreadsController(getThreads);
 
   run();
 
@@ -44,6 +55,7 @@ export async function main(): Promise<void> {
     updateCommentController,
     deleteCommentController,
     getCommentsByPostController,
+    getThreadsController,
   });
 }
 

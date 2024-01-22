@@ -60,6 +60,8 @@ const run = async () => {
           return;
         }
 
+        // Once isThreadsEnabled option is configured, below code will be executed conditionally
+
         const saveThreadResult = await saveThread.execute({
           userId: postData.user,
           postId: postData.postId,
