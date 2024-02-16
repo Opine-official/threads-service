@@ -4,6 +4,7 @@ import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
 import UpdateComment from './src/application/use-cases/UpdateComment';
 import { VerifyUser } from './src/application/use-cases/VerifyUser';
+import { KafkaMessageProducer } from './src/infrastructure/brokers/kafka/kafkaMessageProducer';
 import { DatabaseConnection } from './src/infrastructure/database/Connection';
 import { CommentRepository } from './src/infrastructure/repositories/CommentRepository';
 import { PostRepository } from './src/infrastructure/repositories/PostRepository';
@@ -25,6 +26,7 @@ export async function main(): Promise<void> {
   const postRepo = new PostRepository();
   const commentRepo = new CommentRepository();
   const threadRepo = new ThreadRepository();
+  const messageProducer = new KafkaMessageProducer();
 
   const verifyUser = new VerifyUser();
   const saveComment = new SaveComment(
@@ -32,6 +34,7 @@ export async function main(): Promise<void> {
     postRepo,
     userRepo,
     threadRepo,
+    messageProducer,
   );
   const updateComment = new UpdateComment(commentRepo);
   const deleteComment = new DeleteComment(commentRepo);
