@@ -49,4 +49,23 @@ export class PostRepository implements IPostRepository {
     )) as unknown as { user: { userId: string } } | null;
     return postDocument ? postDocument?.user?.userId?.toString() : null;
   }
+
+  public async findPostMetaDataByPostId(postId: string): Promise<Post | null> {
+    const postDocument = await PostModel.findOne({
+      postId: postId,
+    });
+
+    if (!postDocument) {
+      return null;
+    }
+
+    return new Post({
+      postId: postDocument.postId,
+      title: postDocument.title,
+      description: postDocument.description,
+      user: postDocument.user.toString(),
+      tags: postDocument.tags,
+      slug: postDocument.slug,
+    });
+  }
 }

@@ -89,11 +89,25 @@ export class SaveComment
 
     const userId = await this._postRepo.findUserIdByPostId(input.postId);
 
+    if (!userId) {
+      return new Error('User not found');
+    }
+
+    const postMetaData = await this._postRepo.findPostMetaDataByPostId(
+      input.postId,
+    );
+
+    if (!postMetaData) {
+      return new Error('Post not found');
+    }
+
     const message = JSON.stringify({
       commentId: comment.commentId,
       postId: input.postId,
       senderId: input.userId,
       userId,
+      title: postMetaData.title,
+      slug: postMetaData.slug,
     });
 
     const sendResult = await this._messageProducer.sendToTopic(

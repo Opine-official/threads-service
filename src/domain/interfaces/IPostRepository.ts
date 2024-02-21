@@ -5,4 +5,5 @@ export interface IPostRepository {
   delete(slug: string): Promise<void | Error>;
   findMongoIdByPostId(postId: string): Promise<string | null>;
   findUserIdByPostId(postId: string): Promise<string | null>;
+  findPostMetaDataByPostId(postId: string): Promise<Post | null>;
 }
