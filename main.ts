@@ -1,4 +1,5 @@
 import { DeleteComment } from './src/application/use-cases/DeleteComment';
+import { GetCommentsAndPostsByUser } from './src/application/use-cases/GetCommentsAndPostsByUser';
 import { GetCommentsByPost } from './src/application/use-cases/GetCommentsByPost';
 import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
@@ -13,6 +14,7 @@ import { UserRepository } from './src/infrastructure/repositories/UserRepository
 import { Server } from './src/infrastructure/Server';
 import run from './src/presentation/consumers/ThreadsConsumer';
 import { DeleteCommentController } from './src/presentation/controllers/DeleteCommentController';
+import { GetCommentsAndPostsByUserController } from './src/presentation/controllers/GetCommentsAndPostsByUserController';
 import { GetCommentsByPostController } from './src/presentation/controllers/GetCommentsByPostController';
 import { GetThreadsController } from './src/presentation/controllers/GetThreadsController';
 import { SaveCommentController } from './src/presentation/controllers/SaveCommentController';
@@ -40,6 +42,10 @@ export async function main(): Promise<void> {
   const deleteComment = new DeleteComment(commentRepo);
   const getCommentsByPost = new GetCommentsByPost(commentRepo);
   const getThreads = new GetThreads(threadRepo);
+  const getCommentsAndPostsByUser = new GetCommentsAndPostsByUser(
+    commentRepo,
+    userRepo,
+  );
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -49,6 +55,8 @@ export async function main(): Promise<void> {
     getCommentsByPost,
   );
   const getThreadsController = new GetThreadsController(getThreads);
+  const getCommentsAndPostsByUserController =
+    new GetCommentsAndPostsByUserController(getCommentsAndPostsByUser);
 
   run();
 
@@ -58,6 +66,7 @@ export async function main(): Promise<void> {
     updateCommentController,
     deleteCommentController,
     getCommentsByPostController,
+    getCommentsAndPostsByUserController,
     getThreadsController,
   });
 }

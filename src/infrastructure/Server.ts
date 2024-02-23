@@ -8,6 +8,7 @@ import { UpdateCommentController } from '../presentation/controllers/UpdateComme
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
 import { GetThreadsController } from '../presentation/controllers/GetThreadsController';
+import { GetCommentsAndPostsByUserController } from '../presentation/controllers/GetCommentsAndPostsByUserController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -16,6 +17,7 @@ interface ServerControllers {
   deleteCommentController: DeleteCommentController;
   getCommentsByPostController: GetCommentsByPostController;
   getThreadsController: GetThreadsController;
+  getCommentsAndPostsByUserController: GetCommentsAndPostsByUserController;
 }
 
 const corsOptions = {
@@ -63,6 +65,10 @@ export class Server {
 
     app.get('/comments', (req, res) => {
       controllers.getCommentsByPostController.handle(req, res);
+    });
+
+    app.get('/commentsAndPosts', (req, res) => {
+      controllers.getCommentsAndPostsByUserController.handle(req, res);
     });
 
     app.listen(port, () => {

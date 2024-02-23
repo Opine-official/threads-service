@@ -136,4 +136,42 @@ export class CommentRepository implements ICommentRepository {
       return new Error('Something went wrong while retrieving the comments');
     }
   }
+
+  public async getCommentsAndPostsByUserId(
+    userId: string,
+  ): Promise<IComment[] | Error> {
+    try {
+      const comments = await CommentModel.find({
+        user: userId,
+      })
+        .sort({ createdAt: -1 })
+        .populate('post')
+        .populate('user');
+
+      return comments.map((comment) => ({
+        commentId: comment.commentId,
+        postId: comment.postId,
+        content: comment.content,
+        user: comment.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        post: comment.post as unknown as {
+          postId: string;
+          title: string;
+          slug: string;
+        },
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the comments');
+    }
+  }
 }
