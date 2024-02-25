@@ -3,12 +3,16 @@ import cors from 'cors';
 import { VerifyUserController } from '../presentation/controllers/VerifyUserController';
 import cookieParser from 'cookie-parser';
 import { SaveCommentController } from '../presentation/controllers/SaveCommentController';
-import { authenticateToken } from '@opine-official/authentication';
+import {
+  authenticateToken,
+  authenticateAdmin,
+} from '@opine-official/authentication';
 import { UpdateCommentController } from '../presentation/controllers/UpdateCommentController';
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
 import { GetThreadsController } from '../presentation/controllers/GetThreadsController';
 import { GetCommentsAndPostsByUserController } from '../presentation/controllers/GetCommentsAndPostsByUserController';
+import { GetAllCommentAnalyticsController } from '../presentation/controllers/GetAllCommentAnalyticsController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -18,6 +22,7 @@ interface ServerControllers {
   getCommentsByPostController: GetCommentsByPostController;
   getThreadsController: GetThreadsController;
   getCommentsAndPostsByUserController: GetCommentsAndPostsByUserController;
+  getAllCommentAnalyticsController: GetAllCommentAnalyticsController;
 }
 
 const corsOptions = {
@@ -69,6 +74,10 @@ export class Server {
 
     app.get('/commentsAndPosts', (req, res) => {
       controllers.getCommentsAndPostsByUserController.handle(req, res);
+    });
+
+    app.get('/analytics', authenticateAdmin, (req, res) => {
+      controllers.getAllCommentAnalyticsController.handle(req, res);
     });
 
     app.listen(port, () => {
