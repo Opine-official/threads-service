@@ -1,4 +1,6 @@
 import { Comment } from '../../domain/entities/Comment';
+import { CommentAnalytics } from '../../domain/entities/CommentAnalytics';
+import { ICommentAnalyticsRepository } from '../../domain/interfaces/ICommentAnalyticsRepository';
 import { ICommentRepository } from '../../domain/interfaces/ICommentRepository';
 import { IMessageProducer } from '../../domain/interfaces/IMessageProducer';
 import { IPostRepository } from '../../domain/interfaces/IPostRepository';
@@ -32,6 +34,7 @@ export class SaveComment
     private readonly _postRepo: IPostRepository,
     private readonly _userRepo: IUserRepository,
     private readonly _threadRepo: IThreadRepository,
+    private readonly _commentAnalyticsRepo: ICommentAnalyticsRepository,
     private readonly _messageProducer: IMessageProducer,
   ) {}
 
@@ -99,6 +102,18 @@ export class SaveComment
 
     if (!postMetaData) {
       return new Error('Post not found');
+    }
+
+    const commentAnalytics = new CommentAnalytics({
+      commentId: comment.commentId,
+      comment: saveCommentResult,
+    });
+
+    const saveCommentAnalyticsResult =
+      await this._commentAnalyticsRepo.save(commentAnalytics);
+
+    if (saveCommentAnalyticsResult instanceof Error) {
+      return saveCommentAnalyticsResult;
     }
 
     const message = JSON.stringify({

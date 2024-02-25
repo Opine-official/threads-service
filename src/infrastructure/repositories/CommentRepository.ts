@@ -54,7 +54,7 @@ export class CommentRepository implements ICommentRepository {
     }
   }
 
-  public async save(comment: Comment): Promise<void | Error> {
+  public async save(comment: Comment): Promise<string | Error> {
     try {
       const commentDocument = new CommentModel({
         commentId: comment.commentId,
@@ -65,6 +65,8 @@ export class CommentRepository implements ICommentRepository {
       });
 
       await commentDocument.save();
+
+      return commentDocument._id.toString();
     } catch (error: unknown) {
       if (error instanceof Error) {
         return new Error(error.message);
