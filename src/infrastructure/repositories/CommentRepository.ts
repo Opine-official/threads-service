@@ -176,4 +176,71 @@ export class CommentRepository implements ICommentRepository {
       return new Error('Something went wrong while retrieving the comments');
     }
   }
+
+  public async saveReplyByCommentId(
+    commentId: string,
+    reply: Comment,
+  ): Promise<string | Error> {
+    try {
+      const commentDocument = await CommentModel.findOne({
+        commentId: commentId,
+      });
+
+      if (!commentDocument) {
+        throw new Error('Comment not found');
+      }
+
+      commentDocument.replies.push({
+        commentId: reply.commentId,
+        postId: reply.postId,
+        post: reply.post,
+        user: reply.user,
+        content: reply.content,
+      });
+
+      await commentDocument.save();
+
+      return reply.commentId;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while saving the reply');
+    }
+  }
+
+  public async getRepliesByCommentId(
+    commentId: string,
+  ): Promise<IComment[] | Error> {
+    try {
+      const commentDocument = await CommentModel.findOne({
+        commentId: commentId,
+      }).populate('replies.user');
+
+      if (!commentDocument) {
+        return new Error('Comment not found');
+      }
+
+      return commentDocument.replies.map((reply) => ({
+        commentId: reply.commentId,
+        postId: reply.postId,
+        content: reply.content,
+        user: reply.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        createdAt: reply.createdAt,
+        updatedAt: reply.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the replies');
+    }
+  }
 }

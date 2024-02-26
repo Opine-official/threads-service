@@ -9,4 +9,9 @@ export interface ICommentRepository {
   delete(commentId: string): Promise<void | Error>;
   getCommentsByPostId(postId: string): Promise<IComment[] | Error>;
   getCommentsAndPostsByUserId(userId: string): Promise<IComment[] | Error>;
+  saveReplyByCommentId(
+    commentId: string,
+    reply: Comment,
+  ): Promise<string | Error>;
+  getRepliesByCommentId(commentId: string): Promise<IComment[] | Error>;
 }

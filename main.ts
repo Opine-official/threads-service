@@ -4,6 +4,7 @@ import { GetCommentsAndPostsByUser } from './src/application/use-cases/GetCommen
 import { GetCommentsByPost } from './src/application/use-cases/GetCommentsByPost';
 import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
+import { SaveReplyByCommentId } from './src/application/use-cases/SaveReplyByCommentId';
 import UpdateComment from './src/application/use-cases/UpdateComment';
 import { VerifyUser } from './src/application/use-cases/VerifyUser';
 import { KafkaMessageProducer } from './src/infrastructure/brokers/kafka/kafkaMessageProducer';
@@ -21,6 +22,7 @@ import { GetCommentsAndPostsByUserController } from './src/presentation/controll
 import { GetCommentsByPostController } from './src/presentation/controllers/GetCommentsByPostController';
 import { GetThreadsController } from './src/presentation/controllers/GetThreadsController';
 import { SaveCommentController } from './src/presentation/controllers/SaveCommentController';
+import { SaveReplyByCommentIdController } from './src/presentation/controllers/SaveRepplyByCommentIdController';
 import { UpdateCommentController } from './src/presentation/controllers/UpdateCommentController';
 import { VerifyUserController } from './src/presentation/controllers/VerifyUserController';
 
@@ -54,6 +56,11 @@ export async function main(): Promise<void> {
   const getAllCommentAnalytics = new GetAllCommentAnalytics(
     commentAnalyticsRepo,
   );
+  const saveReplyByCommentId = new SaveReplyByCommentId(
+    commentRepo,
+    userRepo,
+    postRepo,
+  );
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -70,6 +77,10 @@ export async function main(): Promise<void> {
     getAllCommentAnalytics,
   );
 
+  const saveReplyByCommentIdController = new SaveReplyByCommentIdController(
+    saveReplyByCommentId,
+  );
+
   run();
 
   await Server.run(4003, {
@@ -81,6 +92,7 @@ export async function main(): Promise<void> {
     getCommentsAndPostsByUserController,
     getThreadsController,
     getAllCommentAnalyticsController,
+    saveReplyByCommentIdController,
   });
 }
 
