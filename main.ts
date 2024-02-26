@@ -2,6 +2,7 @@ import { DeleteComment } from './src/application/use-cases/DeleteComment';
 import { GetAllCommentAnalytics } from './src/application/use-cases/GetAllCommentAnalytics';
 import { GetCommentsAndPostsByUser } from './src/application/use-cases/GetCommentsAndPostsByUser';
 import { GetCommentsByPost } from './src/application/use-cases/GetCommentsByPost';
+import { GetRepliesByCommentId } from './src/application/use-cases/GetRepliesByCommentId';
 import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
 import { SaveReplyByCommentId } from './src/application/use-cases/SaveReplyByCommentId';
@@ -20,6 +21,7 @@ import { DeleteCommentController } from './src/presentation/controllers/DeleteCo
 import { GetAllCommentAnalyticsController } from './src/presentation/controllers/GetAllCommentAnalyticsController';
 import { GetCommentsAndPostsByUserController } from './src/presentation/controllers/GetCommentsAndPostsByUserController';
 import { GetCommentsByPostController } from './src/presentation/controllers/GetCommentsByPostController';
+import { GetRepliesByCommentIdController } from './src/presentation/controllers/GetRepliesByCommentIdController';
 import { GetThreadsController } from './src/presentation/controllers/GetThreadsController';
 import { SaveCommentController } from './src/presentation/controllers/SaveCommentController';
 import { SaveReplyByCommentIdController } from './src/presentation/controllers/SaveRepplyByCommentIdController';
@@ -61,6 +63,7 @@ export async function main(): Promise<void> {
     userRepo,
     postRepo,
   );
+  const getRepliesByCommentId = new GetRepliesByCommentId(commentRepo);
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -81,6 +84,10 @@ export async function main(): Promise<void> {
     saveReplyByCommentId,
   );
 
+  const getRepliesByCommentIdController = new GetRepliesByCommentIdController(
+    getRepliesByCommentId,
+  );
+
   run();
 
   await Server.run(4003, {
@@ -93,6 +100,7 @@ export async function main(): Promise<void> {
     getThreadsController,
     getAllCommentAnalyticsController,
     saveReplyByCommentIdController,
+    getRepliesByCommentIdController,
   });
 }
 

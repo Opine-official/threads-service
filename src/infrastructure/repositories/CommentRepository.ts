@@ -222,19 +222,33 @@ export class CommentRepository implements ICommentRepository {
         return new Error('Comment not found');
       }
 
-      return commentDocument.replies.map((reply) => ({
-        commentId: reply.commentId,
-        postId: reply.postId,
-        content: reply.content,
-        user: reply.user as unknown as {
-          userId: string;
-          name: string;
-          username: string;
-          profile: string;
-        },
-        createdAt: reply.createdAt,
-        updatedAt: reply.updatedAt,
-      }));
+      if (!commentDocument.replies) {
+        return [];
+      }
+
+      return commentDocument.replies
+        .map((reply) => ({
+          commentId: reply.commentId,
+          postId: reply.postId,
+          content: reply.content,
+          user: reply.user as unknown as {
+            userId: string;
+            name: string;
+            username: string;
+            profile: string;
+          },
+          createdAt: reply.createdAt,
+          updatedAt: reply.updatedAt,
+        }))
+        .sort((a, b) => {
+          if (a.createdAt < b.createdAt) {
+            return 1;
+          }
+          if (a.createdAt > b.createdAt) {
+            return -1;
+          }
+          return 0;
+        });
     } catch (error: unknown) {
       if (error instanceof Error) {
         return new Error(error.message);
