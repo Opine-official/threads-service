@@ -148,7 +148,8 @@ export class CommentRepository implements ICommentRepository {
       })
         .sort({ createdAt: -1 })
         .populate('post')
-        .populate('user');
+        .populate('user')
+        .limit(8);
 
       return comments.map((comment) => ({
         commentId: comment.commentId,
