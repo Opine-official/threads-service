@@ -24,8 +24,12 @@ export class ThreadRepository implements IThreadRepository {
 
   public async findRecommendedThreads(
     userId: string,
+    page: number = 1,
+    limit: number = 5,
   ): Promise<Error | PopulatedThreadModel[]> {
     console.log(userId);
+
+    const skip = (page - 1) * limit;
 
     try {
       const threads = await ThreadModel.find()
@@ -35,6 +39,7 @@ export class ThreadRepository implements IThreadRepository {
         .populate('post')
         .populate({
           path: 'comments',
+          options: { skip, limit },
           populate: [
             {
               path: 'user',
@@ -48,7 +53,11 @@ export class ThreadRepository implements IThreadRepository {
         })
         .exec();
 
-      return threads as unknown as PopulatedThreadModel[];
+      const filteredThreads = threads.filter(
+        (thread) => thread.post !== null,
+      ) as unknown as PopulatedThreadModel[];
+
+      return filteredThreads;
     } catch (error: unknown) {
       if (error instanceof Error) {
         return new Error(error.message);
@@ -56,6 +65,7 @@ export class ThreadRepository implements IThreadRepository {
       return new Error('Something went wrong while finding threads');
     }
   }
+
   public async findThreadIdByPostId(postId: string): Promise<Error | string> {
     try {
       const result = await ThreadModel.findOne({ postId: postId }).select(

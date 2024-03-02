@@ -15,6 +15,7 @@ import { GetCommentsAndPostsByUserController } from '../presentation/controllers
 import { GetAllCommentAnalyticsController } from '../presentation/controllers/GetAllCommentAnalyticsController';
 import { SaveReplyByCommentIdController } from '../presentation/controllers/SaveRepplyByCommentIdController';
 import { GetRepliesByCommentIdController } from '../presentation/controllers/GetRepliesByCommentIdController';
+import { GetThreadCommentsByPostController } from '../presentation/controllers/GetThreadCommentsByPostController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -27,6 +28,7 @@ interface ServerControllers {
   getAllCommentAnalyticsController: GetAllCommentAnalyticsController;
   saveReplyByCommentIdController: SaveReplyByCommentIdController;
   getRepliesByCommentIdController: GetRepliesByCommentIdController;
+  getThreadCommentsByPostController: GetThreadCommentsByPostController;
 }
 
 const corsOptions = {
@@ -90,6 +92,10 @@ export class Server {
 
     app.get('/analytics', authenticateAdmin, (req, res) => {
       controllers.getAllCommentAnalyticsController.handle(req, res);
+    });
+
+    app.get('/threadComments', authenticateToken, (req, res) => {
+      controllers.getThreadCommentsByPostController.handle(req, res);
     });
 
     app.listen(port, () => {
