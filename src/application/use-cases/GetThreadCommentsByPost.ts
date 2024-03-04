@@ -4,6 +4,7 @@ import { IUseCase } from '../../shared/interfaces/IUseCase';
 
 interface IGetThreadCommentsByPostRequestDTO {
   postId: string;
+  page: number;
 }
 
 interface IGetThreadCommentsByPostResult {
@@ -22,7 +23,11 @@ export class GetThreadCommentsByPost
   async execute(
     input: IGetThreadCommentsByPostRequestDTO,
   ): Promise<IGetThreadCommentsByPostResult | Error> {
-    const comments = await this._commentRepo.getCommentsByPostId(input.postId);
+    const comments = await this._commentRepo.getThreadCommentsByPostId(
+      input.postId,
+      input.page,
+      3,
+    );
 
     if (comments instanceof Error) {
       return comments;

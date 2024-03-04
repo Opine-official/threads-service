@@ -139,6 +139,42 @@ export class CommentRepository implements ICommentRepository {
     }
   }
 
+  public async getThreadCommentsByPostId(
+    postId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<IComment[] | Error> {
+    try {
+      const comments = await CommentModel.find({
+        postId: postId,
+      })
+        .sort({ createdAt: -1 })
+        .skip(page > 0 ? (page - 1) * pageSize : 0)
+        .limit(pageSize)
+        .populate('user');
+
+      return comments.map((comment) => ({
+        commentId: comment.commentId,
+        postId: comment.postId,
+        content: comment.content,
+        user: comment.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the comments');
+    }
+  }
+
   public async getCommentsAndPostsByUserId(
     userId: string,
   ): Promise<IComment[] | Error> {

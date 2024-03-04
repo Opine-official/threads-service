@@ -116,6 +116,12 @@ export class SaveComment
       return saveCommentAnalyticsResult;
     }
 
+    if (input.userId === userId) {
+      return {
+        commentId: comment.commentId,
+      };
+    }
+
     const message = JSON.stringify({
       commentId: comment.commentId,
       postId: input.postId,

@@ -8,6 +8,11 @@ export interface ICommentRepository {
   update(comment: Comment): Promise<void | Error>;
   delete(commentId: string): Promise<void | Error>;
   getCommentsByPostId(postId: string): Promise<IComment[] | Error>;
+  getThreadCommentsByPostId(
+    postId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<IComment[] | Error>;
   getCommentsAndPostsByUserId(userId: string): Promise<IComment[] | Error>;
   saveReplyByCommentId(
     commentId: string,
