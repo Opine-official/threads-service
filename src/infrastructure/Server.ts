@@ -3,11 +3,19 @@ import cors from 'cors';
 import { VerifyUserController } from '../presentation/controllers/VerifyUserController';
 import cookieParser from 'cookie-parser';
 import { SaveCommentController } from '../presentation/controllers/SaveCommentController';
-import { authenticateToken } from '@opine-official/authentication';
+import {
+  authenticateToken,
+  authenticateAdmin,
+} from '@opine-official/authentication';
 import { UpdateCommentController } from '../presentation/controllers/UpdateCommentController';
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
 import { GetThreadsController } from '../presentation/controllers/GetThreadsController';
+import { GetCommentsAndPostsByUserController } from '../presentation/controllers/GetCommentsAndPostsByUserController';
+import { GetAllCommentAnalyticsController } from '../presentation/controllers/GetAllCommentAnalyticsController';
+import { SaveReplyByCommentIdController } from '../presentation/controllers/SaveRepplyByCommentIdController';
+import { GetRepliesByCommentIdController } from '../presentation/controllers/GetRepliesByCommentIdController';
+import { GetThreadCommentsByPostController } from '../presentation/controllers/GetThreadCommentsByPostController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -16,6 +24,11 @@ interface ServerControllers {
   deleteCommentController: DeleteCommentController;
   getCommentsByPostController: GetCommentsByPostController;
   getThreadsController: GetThreadsController;
+  getCommentsAndPostsByUserController: GetCommentsAndPostsByUserController;
+  getAllCommentAnalyticsController: GetAllCommentAnalyticsController;
+  saveReplyByCommentIdController: SaveReplyByCommentIdController;
+  getRepliesByCommentIdController: GetRepliesByCommentIdController;
+  getThreadCommentsByPostController: GetThreadCommentsByPostController;
 }
 
 const corsOptions = {
@@ -61,8 +74,28 @@ export class Server {
         controllers.deleteCommentController.handle(req, res);
       });
 
+    app
+      .post('/reply', authenticateToken, (req, res) => {
+        controllers.saveReplyByCommentIdController.handle(req, res);
+      })
+      .get('/replies', (req, res) => {
+        controllers.getRepliesByCommentIdController.handle(req, res);
+      });
+
     app.get('/comments', (req, res) => {
       controllers.getCommentsByPostController.handle(req, res);
+    });
+
+    app.get('/commentsAndPosts', (req, res) => {
+      controllers.getCommentsAndPostsByUserController.handle(req, res);
+    });
+
+    app.get('/analytics', authenticateAdmin, (req, res) => {
+      controllers.getAllCommentAnalyticsController.handle(req, res);
+    });
+
+    app.get('/threadComments', authenticateToken, (req, res) => {
+      controllers.getThreadCommentsByPostController.handle(req, res);
     });
 
     app.listen(port, () => {

@@ -8,12 +8,15 @@ import { ThreadRepository } from '../../infrastructure/repositories/ThreadReposi
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 
 const consumer = kafka.consumer({ groupId: 'threads-consumer-group' });
+const producer = kafka.producer();
 
 const run = async () => {
   await consumer.connect();
   await consumer.subscribe({ topic: 'user-register-topic' });
   await consumer.subscribe({ topic: 'post-create-topic' });
   await consumer.subscribe({ topic: 'post-delete-topic' });
+  await producer.connect();
+
   const userRepository = new UserRepository();
   const postRepository = new PostRepository();
   const threadRepository = new ThreadRepository();
@@ -79,8 +82,45 @@ const run = async () => {
 
         if (deletePostResult instanceof Error) {
           console.error(deletePostResult);
+          try {
+            const sendResult = await producer.send({
+              topic: 'post-delete-response-topic',
+              messages: [
+                {
+                  key: 'post-delete-response-key',
+                  value: JSON.stringify({
+                    success: false,
+                    message: 'post not deleted',
+                  }),
+                },
+              ],
+            });
+            console.log('Message sent, error:', sendResult);
+          } catch (error) {
+            console.error('Error sending message:', error);
+          }
           return;
         }
+
+        try {
+          const sendResult = await producer.send({
+            topic: 'post-delete-response-topic',
+            messages: [
+              {
+                key: 'post-delete-response-key',
+                value: JSON.stringify({
+                  success: true,
+                  message: 'post deleted',
+                }),
+              },
+            ],
+          });
+          console.log('Message sent, success:', sendResult);
+        } catch (error) {
+          console.error('Error sending message:', error);
+        }
+
+        console.log('send acknowledgement');
       }
 
       console.log('consumer end');

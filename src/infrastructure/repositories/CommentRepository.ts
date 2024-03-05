@@ -54,7 +54,7 @@ export class CommentRepository implements ICommentRepository {
     }
   }
 
-  public async save(comment: Comment): Promise<void | Error> {
+  public async save(comment: Comment): Promise<string | Error> {
     try {
       const commentDocument = new CommentModel({
         commentId: comment.commentId,
@@ -65,6 +65,8 @@ export class CommentRepository implements ICommentRepository {
       });
 
       await commentDocument.save();
+
+      return commentDocument._id.toString();
     } catch (error: unknown) {
       if (error instanceof Error) {
         return new Error(error.message);
@@ -134,6 +136,162 @@ export class CommentRepository implements ICommentRepository {
       }
 
       return new Error('Something went wrong while retrieving the comments');
+    }
+  }
+
+  public async getThreadCommentsByPostId(
+    postId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<IComment[] | Error> {
+    try {
+      const comments = await CommentModel.find({
+        postId: postId,
+      })
+        .sort({ createdAt: -1 })
+        .skip(page > 0 ? (page - 1) * pageSize : 0)
+        .limit(pageSize)
+        .populate('user');
+
+      return comments.map((comment) => ({
+        commentId: comment.commentId,
+        postId: comment.postId,
+        content: comment.content,
+        user: comment.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the comments');
+    }
+  }
+
+  public async getCommentsAndPostsByUserId(
+    userId: string,
+  ): Promise<IComment[] | Error> {
+    try {
+      const comments = await CommentModel.find({
+        user: userId,
+      })
+        .sort({ createdAt: -1 })
+        .populate('post')
+        .populate('user')
+        .limit(8);
+
+      return comments.map((comment) => ({
+        commentId: comment.commentId,
+        postId: comment.postId,
+        content: comment.content,
+        user: comment.user as unknown as {
+          userId: string;
+          name: string;
+          username: string;
+          profile: string;
+        },
+        post: comment.post as unknown as {
+          postId: string;
+          title: string;
+          slug: string;
+        },
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      }));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the comments');
+    }
+  }
+
+  public async saveReplyByCommentId(
+    commentId: string,
+    reply: Comment,
+  ): Promise<string | Error> {
+    try {
+      const commentDocument = await CommentModel.findOne({
+        commentId: commentId,
+      });
+
+      if (!commentDocument) {
+        throw new Error('Comment not found');
+      }
+
+      commentDocument.replies.push({
+        commentId: reply.commentId,
+        postId: reply.postId,
+        post: reply.post,
+        user: reply.user,
+        content: reply.content,
+      });
+
+      await commentDocument.save();
+
+      return reply.commentId;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while saving the reply');
+    }
+  }
+
+  public async getRepliesByCommentId(
+    commentId: string,
+  ): Promise<IComment[] | Error> {
+    try {
+      const commentDocument = await CommentModel.findOne({
+        commentId: commentId,
+      }).populate('replies.user');
+
+      if (!commentDocument) {
+        return new Error('Comment not found');
+      }
+
+      if (!commentDocument.replies) {
+        return [];
+      }
+
+      return commentDocument.replies
+        .map((reply) => ({
+          commentId: reply.commentId,
+          postId: reply.postId,
+          content: reply.content,
+          user: reply.user as unknown as {
+            userId: string;
+            name: string;
+            username: string;
+            profile: string;
+          },
+          createdAt: reply.createdAt,
+          updatedAt: reply.updatedAt,
+        }))
+        .sort((a, b) => {
+          if (a.createdAt < b.createdAt) {
+            return 1;
+          }
+          if (a.createdAt > b.createdAt) {
+            return -1;
+          }
+          return 0;
+        });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+
+      return new Error('Something went wrong while retrieving the replies');
     }
   }
 }

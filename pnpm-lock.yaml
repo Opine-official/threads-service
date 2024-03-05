@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@opine-official/authentication':
-    specifier: ^2.0.1
-    version: 2.0.1
+    specifier: ^3.0.0
+    version: 3.0.0
   cookie-parser:
     specifier: ^1.4.6
     version: 1.4.6
@@ -144,8 +144,8 @@ packages:
       fastq: 1.16.0
     dev: true
 
-  /@opine-official/authentication@2.0.1:
-    resolution: {integrity: sha512-7CnulUBi4+L2wky4QBQ1M2ZxmtBzbpVQEqpdBwA15JGTs9usYeqnGbg5QD2WU23BIp0UO4cXjNFpBnFmk1Cd9Q==}
+  /@opine-official/authentication@3.0.0:
+    resolution: {integrity: sha512-+h9sLviDcnNFdKMbuZahrEqgLXiTiS9ED/t0A4eIdVuAFZBnE2JakGk9gWs6fUWEah3iD7GBQ+Y6VJukXHVsvA==}
     dependencies:
       '@types/express': 4.17.21
       '@types/jsonwebtoken': 9.0.5

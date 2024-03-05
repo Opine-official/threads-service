@@ -1,5 +1,8 @@
 import { Comment } from '../../domain/entities/Comment';
+import { CommentAnalytics } from '../../domain/entities/CommentAnalytics';
+import { ICommentAnalyticsRepository } from '../../domain/interfaces/ICommentAnalyticsRepository';
 import { ICommentRepository } from '../../domain/interfaces/ICommentRepository';
+import { IMessageProducer } from '../../domain/interfaces/IMessageProducer';
 import { IPostRepository } from '../../domain/interfaces/IPostRepository';
 import { IThreadRepository } from '../../domain/interfaces/IThreadRepository';
 import { IUserRepository } from '../../domain/interfaces/IUserRepository';
@@ -31,6 +34,8 @@ export class SaveComment
     private readonly _postRepo: IPostRepository,
     private readonly _userRepo: IUserRepository,
     private readonly _threadRepo: IThreadRepository,
+    private readonly _commentAnalyticsRepo: ICommentAnalyticsRepository,
+    private readonly _messageProducer: IMessageProducer,
   ) {}
 
   async execute(
@@ -83,6 +88,57 @@ export class SaveComment
 
     if (commentUpdateResult instanceof Error) {
       return commentUpdateResult;
+    }
+
+    const userId = await this._postRepo.findUserIdByPostId(input.postId);
+
+    if (!userId) {
+      return new Error('User not found');
+    }
+
+    const postMetaData = await this._postRepo.findPostMetaDataByPostId(
+      input.postId,
+    );
+
+    if (!postMetaData) {
+      return new Error('Post not found');
+    }
+
+    const commentAnalytics = new CommentAnalytics({
+      commentId: comment.commentId,
+      comment: saveCommentResult,
+    });
+
+    const saveCommentAnalyticsResult =
+      await this._commentAnalyticsRepo.save(commentAnalytics);
+
+    if (saveCommentAnalyticsResult instanceof Error) {
+      return saveCommentAnalyticsResult;
+    }
+
+    if (input.userId === userId) {
+      return {
+        commentId: comment.commentId,
+      };
+    }
+
+    const message = JSON.stringify({
+      commentId: comment.commentId,
+      postId: input.postId,
+      senderId: input.userId,
+      userId,
+      title: postMetaData.title,
+      slug: postMetaData.slug,
+    });
+
+    const sendResult = await this._messageProducer.sendToTopic(
+      'comment-create-topic',
+      'comment-create-key',
+      message,
+    );
+
+    if (sendResult instanceof Error) {
+      return sendResult;
     }
 
     return {
