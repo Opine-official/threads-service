@@ -31,8 +31,14 @@ interface ServerControllers {
   getThreadCommentsByPostController: GetThreadCommentsByPostController;
 }
 
+const allowedOrigins = [
+  'https://localhost:3000',
+  'https://www.opine.ink',
+  'https://opine.ink',
+];
+
 const corsOptions = {
-  origin: 'https://localhost:3000',
+  origin: allowedOrigins,
   optionsSuccessStatus: 200,
   credentials: true,
 };
