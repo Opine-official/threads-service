@@ -6,6 +6,7 @@ import kafka from '../../infrastructure/brokers/kafka/config';
 import { PostRepository } from '../../infrastructure/repositories/PostRepository';
 import { ThreadRepository } from '../../infrastructure/repositories/ThreadRepository';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
+import { UpdateTokenVersion } from '../../application/use-cases/UpdateTokenVersion';
 
 const consumer = kafka.consumer({ groupId: 'threads-consumer-group' });
 const producer = kafka.producer();
@@ -15,6 +16,7 @@ const run = async () => {
   await consumer.subscribe({ topic: 'user-register-topic' });
   await consumer.subscribe({ topic: 'post-create-topic' });
   await consumer.subscribe({ topic: 'post-delete-topic' });
+  await consumer.subscribe({ topic: 'user-login-topic' });
   await producer.connect();
 
   const userRepository = new UserRepository();
@@ -30,6 +32,7 @@ const run = async () => {
     postRepository,
     threadRepository,
   );
+  const updateTokenVersion = new UpdateTokenVersion(userRepository);
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
@@ -121,6 +124,16 @@ const run = async () => {
         }
 
         console.log('send acknowledgement');
+      } else if (topic === 'user-login-topic') {
+        const userData = JSON.parse(message?.value?.toString());
+
+        const updateTokenVersionResult =
+          await updateTokenVersion.execute(userData);
+
+        if (updateTokenVersionResult instanceof Error) {
+          console.error(updateTokenVersionResult);
+          return;
+        }
       }
 
       console.log('consumer end');

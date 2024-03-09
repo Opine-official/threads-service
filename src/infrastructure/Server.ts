@@ -14,6 +14,7 @@ import { GetAllCommentAnalyticsController } from '../presentation/controllers/Ge
 import { SaveReplyByCommentIdController } from '../presentation/controllers/SaveRepplyByCommentIdController';
 import { GetRepliesByCommentIdController } from '../presentation/controllers/GetRepliesByCommentIdController';
 import { GetThreadCommentsByPostController } from '../presentation/controllers/GetThreadCommentsByPostController';
+import { checkUserTokenVersion } from './middlewares/checkTokenVersion';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -59,29 +60,54 @@ export class Server {
       controllers.verifyUserController.handle(req, res);
     });
 
-    app.get('/', (req, res) => {
-      controllers.getThreadsController.handle(req, res);
-    });
+    app.get(
+      '/',
+      authenticateRole('user'),
+      checkUserTokenVersion,
+      (req, res) => {
+        controllers.getThreadsController.handle(req, res);
+      },
+    );
 
     app
       .get('/comment', (req, res) => {
         console.log(req, res);
         // logic to fetch single comment goes here
       })
-      .post('/comment', authenticateRole('user'), (req, res) => {
-        controllers.saveCommentController.handle(req, res);
-      })
-      .put('/comment', authenticateRole('user'), (req, res) => {
-        controllers.updateCommentController.handle(req, res);
-      })
-      .delete('/comment', authenticateRole('user'), (req, res) => {
-        controllers.deleteCommentController.handle(req, res);
-      });
+      .post(
+        '/comment',
+        authenticateRole('user'),
+        checkUserTokenVersion,
+        (req, res) => {
+          controllers.saveCommentController.handle(req, res);
+        },
+      )
+      .put(
+        '/comment',
+        authenticateRole('user'),
+        checkUserTokenVersion,
+        (req, res) => {
+          controllers.updateCommentController.handle(req, res);
+        },
+      )
+      .delete(
+        '/comment',
+        authenticateRole('user'),
+        checkUserTokenVersion,
+        (req, res) => {
+          controllers.deleteCommentController.handle(req, res);
+        },
+      );
 
     app
-      .post('/reply', authenticateRole('user'), (req, res) => {
-        controllers.saveReplyByCommentIdController.handle(req, res);
-      })
+      .post(
+        '/reply',
+        authenticateRole('user'),
+        checkUserTokenVersion,
+        (req, res) => {
+          controllers.saveReplyByCommentIdController.handle(req, res);
+        },
+      )
       .get('/replies', (req, res) => {
         controllers.getRepliesByCommentIdController.handle(req, res);
       });
@@ -98,9 +124,14 @@ export class Server {
       controllers.getAllCommentAnalyticsController.handle(req, res);
     });
 
-    app.get('/threadComments', authenticateRole('user'), (req, res) => {
-      controllers.getThreadCommentsByPostController.handle(req, res);
-    });
+    app.get(
+      '/threadComments',
+      authenticateRole('user'),
+      checkUserTokenVersion,
+      (req, res) => {
+        controllers.getThreadCommentsByPostController.handle(req, res);
+      },
+    );
 
     app.listen(port, () => {
       console.log(`Server is running in ${port}`);

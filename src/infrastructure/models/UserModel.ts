@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
 });
 
 export type UserModel = InferSchemaType<typeof UserSchema>;
