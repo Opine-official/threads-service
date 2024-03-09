@@ -15,6 +15,7 @@ import { SaveReplyByCommentIdController } from '../presentation/controllers/Save
 import { GetRepliesByCommentIdController } from '../presentation/controllers/GetRepliesByCommentIdController';
 import { GetThreadCommentsByPostController } from '../presentation/controllers/GetThreadCommentsByPostController';
 import { checkUserTokenVersion } from './middlewares/checkTokenVersion';
+import { UpVoteThreadController } from '../presentation/controllers/UpVoteThreadController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -28,6 +29,7 @@ interface ServerControllers {
   saveReplyByCommentIdController: SaveReplyByCommentIdController;
   getRepliesByCommentIdController: GetRepliesByCommentIdController;
   getThreadCommentsByPostController: GetThreadCommentsByPostController;
+  upVoteThreadController: UpVoteThreadController;
 }
 
 const allowedOrigins = [
@@ -130,6 +132,15 @@ export class Server {
       checkUserTokenVersion,
       (req, res) => {
         controllers.getThreadCommentsByPostController.handle(req, res);
+      },
+    );
+
+    app.post(
+      '/upVote',
+      authenticateRole('user'),
+      checkUserTokenVersion,
+      (req, res) => {
+        controllers.upVoteThreadController.handle(req, res);
       },
     );
 

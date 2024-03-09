@@ -8,6 +8,7 @@ import { GetThreads } from './src/application/use-cases/GetThreads';
 import { SaveComment } from './src/application/use-cases/SaveComment';
 import { SaveReplyByCommentId } from './src/application/use-cases/SaveReplyByCommentId';
 import UpdateComment from './src/application/use-cases/UpdateComment';
+import { UpVoteThread } from './src/application/use-cases/UpVoteThread';
 import { VerifyUser } from './src/application/use-cases/VerifyUser';
 import { KafkaMessageProducer } from './src/infrastructure/brokers/kafka/kafkaMessageProducer';
 import { DatabaseConnection } from './src/infrastructure/database/Connection';
@@ -15,6 +16,7 @@ import { CommentAnalyticsRepository } from './src/infrastructure/repositories/Co
 import { CommentRepository } from './src/infrastructure/repositories/CommentRepository';
 import { PostRepository } from './src/infrastructure/repositories/PostRepository';
 import { ThreadRepository } from './src/infrastructure/repositories/ThreadRepository';
+import { ThreadVoteRepository } from './src/infrastructure/repositories/ThreadVoteRepository';
 import { UserRepository } from './src/infrastructure/repositories/UserRepository';
 import { Server } from './src/infrastructure/Server';
 import run from './src/presentation/consumers/ThreadsConsumer';
@@ -28,6 +30,7 @@ import { GetThreadsController } from './src/presentation/controllers/GetThreadsC
 import { SaveCommentController } from './src/presentation/controllers/SaveCommentController';
 import { SaveReplyByCommentIdController } from './src/presentation/controllers/SaveRepplyByCommentIdController';
 import { UpdateCommentController } from './src/presentation/controllers/UpdateCommentController';
+import { UpVoteThreadController } from './src/presentation/controllers/UpVoteThreadController';
 import { VerifyUserController } from './src/presentation/controllers/VerifyUserController';
 
 export async function main(): Promise<void> {
@@ -38,6 +41,7 @@ export async function main(): Promise<void> {
   const commentRepo = new CommentRepository();
   const threadRepo = new ThreadRepository();
   const commentAnalyticsRepo = new CommentAnalyticsRepository();
+  const threadVoteRepo = new ThreadVoteRepository();
   const messageProducer = new KafkaMessageProducer();
 
   const verifyUser = new VerifyUser();
@@ -67,6 +71,7 @@ export async function main(): Promise<void> {
   );
   const getRepliesByCommentId = new GetRepliesByCommentId(commentRepo);
   const getThreadCommentsByPost = new GetThreadCommentsByPost(commentRepo);
+  const upVoteThread = new UpVoteThread(threadRepo, userRepo, threadVoteRepo);
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -93,6 +98,8 @@ export async function main(): Promise<void> {
   const getThreadCommentsByPostController =
     new GetThreadCommentsByPostController(getThreadCommentsByPost);
 
+  const upVoteThreadController = new UpVoteThreadController(upVoteThread);
+
   run();
 
   await Server.run(4003, {
@@ -107,6 +114,7 @@ export async function main(): Promise<void> {
     saveReplyByCommentIdController,
     getRepliesByCommentIdController,
     getThreadCommentsByPostController,
+    upVoteThreadController,
   });
 }
 

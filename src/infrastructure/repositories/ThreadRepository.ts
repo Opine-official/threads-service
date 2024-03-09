@@ -103,4 +103,52 @@ export class ThreadRepository implements IThreadRepository {
       return new Error('Something went wrong while updating comment count');
     }
   }
+
+  public async findMongoIdByThreadId(
+    threadId: string,
+  ): Promise<Error | string> {
+    try {
+      const result = await ThreadModel.findOne({ threadId: threadId }).select(
+        '_id',
+      );
+      if (!result) {
+        throw new Error('Thread not found');
+      }
+
+      return result._id.toString();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while finding threadId');
+    }
+  }
+
+  public async upVote(threadId: string): Promise<Error | void> {
+    try {
+      await ThreadModel.findOneAndUpdate(
+        { threadId: threadId },
+        { $inc: { upVotes: 1 } },
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while upvoting');
+    }
+  }
+
+  public async downVote(threadId: string): Promise<Error | void> {
+    try {
+      await ThreadModel.findOneAndUpdate(
+        { threadId: threadId },
+        { $inc: { downVotes: 1 } },
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while downvoting');
+    }
+  }
 }

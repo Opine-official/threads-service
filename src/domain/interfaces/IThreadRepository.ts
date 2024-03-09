@@ -1,4 +1,4 @@
-import { Thread } from '../../domain/entities/Thread';
+import { Thread } from '../entities/Thread';
 import { PopulatedThreadModel } from '../../infrastructure/models/ThreadModel';
 
 export interface IThreadRepository {
@@ -11,4 +11,7 @@ export interface IThreadRepository {
   //   findThreadByPostId(postId: string): Promise<Thread | null>;
   // findThreadsByUserId(userId: string): Promise<Thread[] | Error>;
   //   updateCommentCount(threadId: string, commentCount: number): Promise<void | Error>;
+  findMongoIdByThreadId(threadId: string): Promise<string | Error>;
+  upVote(threadId: string): Promise<void | Error>;
+  downVote(threadId: string): Promise<void | Error>;
 }
