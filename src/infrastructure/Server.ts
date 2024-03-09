@@ -2,11 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { VerifyUserController } from '../presentation/controllers/VerifyUserController';
 import cookieParser from 'cookie-parser';
+import { authenticateRole } from '@opine-official/authentication';
 import { SaveCommentController } from '../presentation/controllers/SaveCommentController';
-import {
-  authenticateToken,
-  authenticateAdmin,
-} from '@opine-official/authentication';
+import { authenticateAdmin } from '@opine-official/authentication';
 import { UpdateCommentController } from '../presentation/controllers/UpdateCommentController';
 import { DeleteCommentController } from '../presentation/controllers/DeleteCommentController';
 import { GetCommentsByPostController } from '../presentation/controllers/GetCommentsByPostController';
@@ -70,18 +68,18 @@ export class Server {
         console.log(req, res);
         // logic to fetch single comment goes here
       })
-      .post('/comment', authenticateToken, (req, res) => {
+      .post('/comment', authenticateRole('user'), (req, res) => {
         controllers.saveCommentController.handle(req, res);
       })
-      .put('/comment', authenticateToken, (req, res) => {
+      .put('/comment', authenticateRole('user'), (req, res) => {
         controllers.updateCommentController.handle(req, res);
       })
-      .delete('/comment', authenticateToken, (req, res) => {
+      .delete('/comment', authenticateRole('user'), (req, res) => {
         controllers.deleteCommentController.handle(req, res);
       });
 
     app
-      .post('/reply', authenticateToken, (req, res) => {
+      .post('/reply', authenticateRole('user'), (req, res) => {
         controllers.saveReplyByCommentIdController.handle(req, res);
       })
       .get('/replies', (req, res) => {
@@ -100,7 +98,7 @@ export class Server {
       controllers.getAllCommentAnalyticsController.handle(req, res);
     });
 
-    app.get('/threadComments', authenticateToken, (req, res) => {
+    app.get('/threadComments', authenticateRole('user'), (req, res) => {
       controllers.getThreadCommentsByPostController.handle(req, res);
     });
 
