@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 
+enum VoteType {
+  Up = 'up',
+  Down = 'down',
+}
+
 const ThreadVoteSchema = new mongoose.Schema({
   threadVoteId: {
     type: String,
@@ -24,7 +29,8 @@ const ThreadVoteSchema = new mongoose.Schema({
     required: true,
   },
   type: {
-    type: ['up', 'down'],
+    type: String,
+    enum: Object.values(VoteType),
     required: true,
   },
 });

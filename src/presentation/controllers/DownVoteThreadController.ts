@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IController } from '../../shared/interfaces/IController';
-import { UpVoteThread } from '../../application/use-cases/UpVoteThread';
+import { DownVoteThread } from '../../application/use-cases/DownVoteThread';
 
-export class UpVoteThreadController implements IController {
-  public constructor(private readonly _useCase: UpVoteThread) {}
+export class DownVoteThreadController implements IController {
+  public constructor(private readonly _useCase: DownVoteThread) {}
 
   public async handle(req: Request, res: Response): Promise<void> {
     const result = await this._useCase.execute({
@@ -17,8 +17,9 @@ export class UpVoteThreadController implements IController {
       return;
     }
 
-    res
-      .status(200)
-      .send({ message: 'Thread upvoted successfully', votes: result });
+    res.status(200).send({
+      message: 'Thread down voted successfully',
+      votes: result,
+    });
   }
 }

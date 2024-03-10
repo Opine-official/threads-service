@@ -16,6 +16,7 @@ import { GetRepliesByCommentIdController } from '../presentation/controllers/Get
 import { GetThreadCommentsByPostController } from '../presentation/controllers/GetThreadCommentsByPostController';
 import { checkUserTokenVersion } from './middlewares/checkTokenVersion';
 import { UpVoteThreadController } from '../presentation/controllers/UpVoteThreadController';
+import { DownVoteThreadController } from '../presentation/controllers/DownVoteThreadController';
 
 interface ServerControllers {
   verifyUserController: VerifyUserController;
@@ -30,6 +31,7 @@ interface ServerControllers {
   getRepliesByCommentIdController: GetRepliesByCommentIdController;
   getThreadCommentsByPostController: GetThreadCommentsByPostController;
   upVoteThreadController: UpVoteThreadController;
+  downVoteThreadController: DownVoteThreadController;
 }
 
 const allowedOrigins = [
@@ -141,6 +143,15 @@ export class Server {
       checkUserTokenVersion,
       (req, res) => {
         controllers.upVoteThreadController.handle(req, res);
+      },
+    );
+
+    app.post(
+      '/downVote',
+      authenticateRole('user'),
+      checkUserTokenVersion,
+      (req, res) => {
+        controllers.downVoteThreadController.handle(req, res);
       },
     );
 

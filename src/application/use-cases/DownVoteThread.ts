@@ -5,30 +5,32 @@ import {
 import { IUseCase } from '../../shared/interfaces/IUseCase';
 import { IUserRepository } from '../../domain/interfaces/IUserRepository';
 
-interface IUpVoteThreadRequestDTO {
+interface IDownVoteThreadRequestDTO {
   userId: string;
   threadId: string;
 }
 
-export class UpVoteThread implements IUseCase<IUpVoteThreadRequestDTO, votes> {
+export class DownVoteThread
+  implements IUseCase<IDownVoteThreadRequestDTO, votes>
+{
   constructor(
     private readonly _threadRepo: IThreadRepository,
     private readonly _userRepo: IUserRepository,
   ) {}
 
-  async execute(input: IUpVoteThreadRequestDTO): Promise<votes | Error> {
+  async execute(input: IDownVoteThreadRequestDTO): Promise<votes | Error> {
     const user = await this._userRepo.findMongoIdByUserId(input.userId);
 
     if (!user) {
       return new Error('User not found');
     }
 
-    const upVote = this._threadRepo.upVote(input.threadId, user);
+    const downVote = this._threadRepo.downVote(input.threadId, user);
 
-    if (upVote instanceof Error) {
-      return upVote;
+    if (downVote instanceof Error) {
+      return downVote;
     }
 
-    return upVote;
+    return downVote;
   }
 }

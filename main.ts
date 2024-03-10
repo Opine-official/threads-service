@@ -1,4 +1,5 @@
 import { DeleteComment } from './src/application/use-cases/DeleteComment';
+import { DownVoteThread } from './src/application/use-cases/DownVoteThread';
 import { GetAllCommentAnalytics } from './src/application/use-cases/GetAllCommentAnalytics';
 import { GetCommentsAndPostsByUser } from './src/application/use-cases/GetCommentsAndPostsByUser';
 import { GetCommentsByPost } from './src/application/use-cases/GetCommentsByPost';
@@ -16,11 +17,11 @@ import { CommentAnalyticsRepository } from './src/infrastructure/repositories/Co
 import { CommentRepository } from './src/infrastructure/repositories/CommentRepository';
 import { PostRepository } from './src/infrastructure/repositories/PostRepository';
 import { ThreadRepository } from './src/infrastructure/repositories/ThreadRepository';
-import { ThreadVoteRepository } from './src/infrastructure/repositories/ThreadVoteRepository';
 import { UserRepository } from './src/infrastructure/repositories/UserRepository';
 import { Server } from './src/infrastructure/Server';
 import run from './src/presentation/consumers/ThreadsConsumer';
 import { DeleteCommentController } from './src/presentation/controllers/DeleteCommentController';
+import { DownVoteThreadController } from './src/presentation/controllers/DownVoteThreadController';
 import { GetAllCommentAnalyticsController } from './src/presentation/controllers/GetAllCommentAnalyticsController';
 import { GetCommentsAndPostsByUserController } from './src/presentation/controllers/GetCommentsAndPostsByUserController';
 import { GetCommentsByPostController } from './src/presentation/controllers/GetCommentsByPostController';
@@ -41,7 +42,6 @@ export async function main(): Promise<void> {
   const commentRepo = new CommentRepository();
   const threadRepo = new ThreadRepository();
   const commentAnalyticsRepo = new CommentAnalyticsRepository();
-  const threadVoteRepo = new ThreadVoteRepository();
   const messageProducer = new KafkaMessageProducer();
 
   const verifyUser = new VerifyUser();
@@ -56,7 +56,7 @@ export async function main(): Promise<void> {
   const updateComment = new UpdateComment(commentRepo);
   const deleteComment = new DeleteComment(commentRepo);
   const getCommentsByPost = new GetCommentsByPost(commentRepo);
-  const getThreads = new GetThreads(threadRepo);
+  const getThreads = new GetThreads(threadRepo, userRepo);
   const getCommentsAndPostsByUser = new GetCommentsAndPostsByUser(
     commentRepo,
     userRepo,
@@ -71,7 +71,8 @@ export async function main(): Promise<void> {
   );
   const getRepliesByCommentId = new GetRepliesByCommentId(commentRepo);
   const getThreadCommentsByPost = new GetThreadCommentsByPost(commentRepo);
-  const upVoteThread = new UpVoteThread(threadRepo, userRepo, threadVoteRepo);
+  const upVoteThread = new UpVoteThread(threadRepo, userRepo);
+  const downVoteThread = new DownVoteThread(threadRepo, userRepo);
 
   const verifyUserController = new VerifyUserController(verifyUser);
   const saveCommentController = new SaveCommentController(saveComment);
@@ -100,6 +101,7 @@ export async function main(): Promise<void> {
 
   const upVoteThreadController = new UpVoteThreadController(upVoteThread);
 
+  const downVoteThreadController = new DownVoteThreadController(downVoteThread);
   run();
 
   await Server.run(4003, {
@@ -115,6 +117,7 @@ export async function main(): Promise<void> {
     getRepliesByCommentIdController,
     getThreadCommentsByPostController,
     upVoteThreadController,
+    downVoteThreadController,
   });
 }
 
