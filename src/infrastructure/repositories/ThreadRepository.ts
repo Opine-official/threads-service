@@ -33,7 +33,11 @@ export class ThreadRepository implements IThreadRepository {
     try {
       const threads = await ThreadModel.find()
         .lean()
-        .sort({ commentCount: -1 })
+        .sort({
+          commentCount: -1,
+          upVotes: -1,
+          downVotes: 1,
+        })
         .limit(5)
         .populate('user')
         .populate('post')
@@ -63,7 +67,6 @@ export class ThreadRepository implements IThreadRepository {
       return new Error('Something went wrong while finding threads');
     }
   }
-
   public async findThreadIdByPostId(postId: string): Promise<Error | string> {
     try {
       const result = await ThreadModel.findOne({ postId: postId }).select(
