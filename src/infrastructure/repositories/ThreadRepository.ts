@@ -1,6 +1,10 @@
-import { IThreadRepository } from '../../domain/interfaces/IThreadRepository';
+import {
+  IThreadRepository,
+  votes,
+} from '../../domain/interfaces/IThreadRepository';
 import { Thread } from '../../domain/entities/Thread';
 import ThreadModel, { PopulatedThreadModel } from '../models/ThreadModel';
+import { Types } from 'mongoose';
 
 export class ThreadRepository implements IThreadRepository {
   public async save(thread: Thread): Promise<Error | void> {
@@ -24,40 +28,38 @@ export class ThreadRepository implements IThreadRepository {
 
   public async findRecommendedThreads(
     userId: string,
-    page: number = 1,
-    limit: number = 5,
+    mongoUserId: Types.ObjectId,
   ): Promise<Error | PopulatedThreadModel[]> {
-    console.log(userId);
-
-    const skip = (page - 1) * limit;
-
     try {
       const threads = await ThreadModel.find()
-        .sort({ commentCount: -1 })
+        .lean()
+        .sort({
+          commentCount: -1,
+          upVotes: -1,
+          downVotes: 1,
+        })
         .limit(5)
         .populate('user')
         .populate('post')
-        .populate({
-          path: 'comments',
-          options: { skip, limit },
-          populate: [
-            {
-              path: 'user',
-              model: 'User',
-            },
-            {
-              path: 'post',
-              model: 'Post',
-            },
-          ],
-        })
         .exec();
 
       const filteredThreads = threads.filter(
         (thread) => thread.post !== null,
       ) as unknown as PopulatedThreadModel[];
 
-      return filteredThreads;
+      const highlightedThreads = filteredThreads.map((thread) => {
+        return {
+          ...thread,
+          hasUpVoted: thread.upVoters
+            ?.map((voter) => voter.toString())
+            .includes(mongoUserId.toString()),
+          hasDownVoted: thread.downVoters
+            ?.map((voter) => voter.toString())
+            .includes(mongoUserId.toString()),
+        };
+      });
+
+      return highlightedThreads;
     } catch (error: unknown) {
       if (error instanceof Error) {
         return new Error(error.message);
@@ -65,7 +67,6 @@ export class ThreadRepository implements IThreadRepository {
       return new Error('Something went wrong while finding threads');
     }
   }
-
   public async findThreadIdByPostId(postId: string): Promise<Error | string> {
     try {
       const result = await ThreadModel.findOne({ postId: postId }).select(
@@ -101,6 +102,126 @@ export class ThreadRepository implements IThreadRepository {
         return new Error(error.message);
       }
       return new Error('Something went wrong while updating comment count');
+    }
+  }
+
+  public async findMongoIdByThreadId(
+    threadId: string,
+  ): Promise<Error | string> {
+    try {
+      const result = await ThreadModel.findOne({ threadId: threadId }).select(
+        '_id',
+      );
+      if (!result) {
+        throw new Error('Thread not found');
+      }
+
+      return result._id.toString();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while finding threadId');
+    }
+  }
+
+  public async upVote(threadId: string, user: string): Promise<Error | votes> {
+    try {
+      const thread = await ThreadModel.findOne({ threadId: threadId });
+      if (!thread) {
+        return new Error('Thread not found');
+      }
+      const hasUpVoted = thread.upVoters
+        .map((voter) => voter.toString())
+        .includes(user.toString());
+      const hasDownVoted = thread.downVoters
+        .map((voter) => voter.toString())
+        .includes(user.toString());
+
+      if (hasUpVoted) {
+        await ThreadModel.findOneAndUpdate(
+          { threadId: threadId },
+          { $inc: { upVotes: -1 }, $pull: { upVoters: user } },
+        );
+      } else {
+        if (hasDownVoted) {
+          await ThreadModel.findOneAndUpdate(
+            { threadId: threadId },
+            { $inc: { downVotes: -1 }, $pull: { downVoters: user } },
+          );
+        }
+        await ThreadModel.findOneAndUpdate(
+          { threadId: threadId },
+          { $inc: { upVotes: 1 }, $push: { upVoters: user } },
+        );
+      }
+
+      const updatedThread = await ThreadModel.findOne({ threadId: threadId });
+
+      if (!updatedThread) {
+        return new Error('Updated thread not found');
+      }
+
+      return {
+        upVotes: updatedThread.upVotes,
+        downVotes: updatedThread.downVotes,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while up voting');
+    }
+  }
+
+  public async downVote(
+    threadId: string,
+    user: string,
+  ): Promise<Error | votes> {
+    try {
+      const thread = await ThreadModel.findOne({ threadId: threadId });
+      if (!thread) {
+        return new Error('Thread not found');
+      }
+      const hasDownVoted = thread.downVoters
+        .map((voter) => voter.toString())
+        .includes(user.toString());
+      const hasUpVoted = thread.upVoters
+        .map((voter) => voter.toString())
+        .includes(user.toString());
+
+      if (hasDownVoted) {
+        await ThreadModel.findOneAndUpdate(
+          { threadId: threadId },
+          { $inc: { downVotes: -1 }, $pull: { downVoters: user } },
+        );
+      } else {
+        if (hasUpVoted) {
+          await ThreadModel.findOneAndUpdate(
+            { threadId: threadId },
+            { $inc: { upVotes: -1 }, $pull: { upVoters: user } },
+          );
+        }
+        await ThreadModel.findOneAndUpdate(
+          { threadId: threadId },
+          { $inc: { downVotes: 1 }, $push: { downVoters: user } },
+        );
+      }
+      const updatedThread = await ThreadModel.findOne({ threadId: threadId });
+
+      if (!updatedThread) {
+        return new Error('Updated thread not found');
+      }
+
+      return {
+        upVotes: updatedThread.upVotes,
+        downVotes: updatedThread.downVotes,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return new Error(error.message);
+      }
+      return new Error('Something went wrong while down voting');
     }
   }
 }

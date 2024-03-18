@@ -10,6 +10,10 @@ const ThreadSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     commentCount: { type: Number, required: true },
+    upVotes: { type: Number, required: true, default: 0 },
+    downVotes: { type: Number, required: true, default: 0 },
+    upVoters: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    downVoters: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true },
 );

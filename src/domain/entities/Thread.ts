@@ -6,6 +6,10 @@ type ThreadParams = {
   post: string;
   user: string;
   commentCount: number;
+  upVotes?: number;
+  downVotes?: number;
+  upVoters?: string[];
+  downVoters?: string[];
 };
 
 export class Thread {
@@ -14,6 +18,10 @@ export class Thread {
   post: string;
   user: string;
   commentCount: number;
+  upVotes?: number;
+  downVotes?: number;
+  upVoters?: string[];
+  downVoters?: string[];
 
   constructor(params: ThreadParams) {
     this.threadId = params.threadId || randomUUID();
@@ -21,5 +29,9 @@ export class Thread {
     this.post = params.post;
     this.user = params.user;
     this.commentCount = params.commentCount;
+    this.upVotes = params.upVotes || 0;
+    this.downVotes = params.downVotes || 0;
+    this.upVoters = params.upVoters || [];
+    this.downVoters = params.downVoters || [];
   }
 }

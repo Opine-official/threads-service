@@ -1,14 +1,20 @@
-import { Thread } from '../../domain/entities/Thread';
+import { Thread } from '../entities/Thread';
 import { PopulatedThreadModel } from '../../infrastructure/models/ThreadModel';
+import { Types } from 'mongoose';
 
+export type votes = {
+  upVotes: number;
+  downVotes: number;
+};
 export interface IThreadRepository {
   save(thread: Thread): Promise<void | Error>;
   findRecommendedThreads(
-    userId: string | undefined, // temporarily accepting undefined
+    userId: string,
+    mongoUserId: Types.ObjectId,
   ): Promise<PopulatedThreadModel[] | Error>;
   updateComment(threadId: string, commentId: string): Promise<void | Error>;
   findThreadIdByPostId(postId: string): Promise<string | Error>;
-  //   findThreadByPostId(postId: string): Promise<Thread | null>;
-  // findThreadsByUserId(userId: string): Promise<Thread[] | Error>;
-  //   updateCommentCount(threadId: string, commentCount: number): Promise<void | Error>;
+  findMongoIdByThreadId(threadId: string): Promise<string | Error>;
+  upVote(threadId: string, user: string): Promise<votes | Error>;
+  downVote(threadId: string, user: string): Promise<votes | Error>;
 }
